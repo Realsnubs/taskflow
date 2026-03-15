@@ -37,7 +37,7 @@ taskflow
 ├── static
 ├── manage.py
 
-ーーー
+---
 
 ## Installation
 Clone the repository:
