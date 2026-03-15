@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Projects{% endblock %}
+
+{% block content %}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h1 class="h3 m-0">Projects</h1>
+  <a class="btn btn-primary" href="/projects/new/">+ Add project</a>
+</div>
+
+<div class="row g-3">
+  {% for project in projects %}
+    <div class="col-12 col-md-6 col-lg-4">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title mb-2">{{ project.name }}</h5>
+          {% if project.description %}
+            <p class="card-text text-muted">{{ project.description }}</p>
+          {% endif %}
+          <a class="btn btn-outline-primary btn-sm" href="/projects/{{ project.id }}/board/">
+            Open board
+          </a>
+        </div>
+      </div>
+    </div>
+  {% empty %}
+    <div class="col-12">
+      <div class="alert alert-info">No projects yet</div>
+    </div>
+  {% endfor %}
+</div>
+
+{% endblock %}

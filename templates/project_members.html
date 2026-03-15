@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Members{% endblock %}
+
+{% block content %}
+
+<h1>Members — {{ project.name }}</h1>
+
+<p>
+  <a href="/projects/{{ project.id }}/board/">Back to board</a>
+</p>
+
+<h2>Current members</h2>
+<ul>
+  {% for m in members %}
+    <li>{{ m.user.username }} — {{ m.role }}</li>
+  {% empty %}
+    <li>No members</li>
+  {% endfor %}
+</ul>
+
+<h2>Add member</h2>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Add</button>
+</form>
+
+{% endblock %}
