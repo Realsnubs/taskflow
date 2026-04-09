@@ -1,7 +1,16 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import Project
 from .forms import ProjectForm, TaskForm
 from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+from django.contrib.auth import logout
+from django.shortcuts import redirect
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login
+
+def custom_logout(request):
+    logout(request)
+    return redirect("/accounts/login/")
 
 @login_required
 def project_list(request):
@@ -33,16 +42,30 @@ from .models import Task
 def project_board(request, project_id):
     project = get_object_or_404(Project, id=project_id)
 
-    todo = Task.objects.filter(project=project, status="todo")
-    in_progress = Task.objects.filter(project=project, status="in_progress")
-    done = Task.objects.filter(project=project, status="done")
+    status_filter = request.GET.get("status", "")
+    priority_filter = request.GET.get("priority", "")
+
+    tasks = Task.objects.filter(project=project)
+
+    if status_filter:
+        tasks = tasks.filter(status=status_filter)
+
+    if priority_filter:
+        tasks = tasks.filter(priority=priority_filter)
+
+    todo = tasks.filter(status="todo")
+    in_progress = tasks.filter(status="in_progress")
+    done = tasks.filter(status="done")
 
     return render(request, "project_board.html", {
-        "project": project,
-        "todo": todo,
-        "in_progress": in_progress,
-        "done": done,
-    })
+    "project": project,
+    "todo": todo,
+    "in_progress": in_progress,
+    "done": done,
+    "status_filter": status_filter,
+    "priority_filter": priority_filter,
+    "today": timezone.now().date(),
+})
 
 @login_required
 def task_create(request, project_id):
@@ -101,25 +124,29 @@ from .models import Membership
 
 @login_required
 def project_members(request, project_id):
-    project = get_object_or_404(Project, id=project_id, memberships__user=request.user)
+    project = get_object_or_404(Project, id=project_id)
+    memberships = Membership.objects.filter(project=project).select_related("user")
 
-    my_membership = Membership.objects.get(project=project, user=request.user)
-    if my_membership.role not in (Membership.ROLE_OWNER, Membership.ROLE_MANAGER):
-        return redirect(f"/projects/{project.id}/board/")
-
-    members = Membership.objects.filter(project=project).select_related("user").order_by("role", "user__username")
+    existing_user_ids = memberships.values_list("user_id", flat=True)
 
     if request.method == "POST":
         form = MembershipForm(request.POST)
+        form.fields["user"].queryset = form.fields["user"].queryset.exclude(id__in=existing_user_ids)
+
         if form.is_valid():
-            m = form.save(commit=False)
-            m.project = project
-            m.save()
+            membership = form.save(commit=False)
+            membership.project = project
+            membership.save()
             return redirect(f"/projects/{project.id}/members/")
     else:
         form = MembershipForm()
+        form.fields["user"].queryset = form.fields["user"].queryset.exclude(id__in=existing_user_ids)
 
-    return render(request, "project_members.html", {"project": project, "members": members, "form": form})
+    return render(request, "project_members.html", {
+        "project": project,
+        "memberships": memberships,
+        "form": form,
+    })
 
 
 
@@ -188,3 +215,52 @@ class CommentViewSet(viewsets.ModelViewSet):
 class MembershipViewSet(viewsets.ModelViewSet):
     queryset = Membership.objects.all()
     serializer_class = MembershipSerializer
+
+
+def landing_page(request):
+    return render(request, "landing.html")
+    
+
+
+
+def register_view(request):
+    if request.method == "POST":
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect("/projects/")
+    else:
+        form = UserCreationForm()
+
+    return render(request, "registration/register.html", {"form": form})
+
+
+
+def remove_member(request, project_id, membership_id):
+    membership = get_object_or_404(Membership, id=membership_id, project_id=project_id)
+
+    if membership.role != "owner":
+        membership.delete()
+
+    return redirect(f"/projects/{project_id}/members/")
+
+
+def task_edit(request, project_id, task_id):
+    project = get_object_or_404(Project, id=project_id)
+    task = get_object_or_404(Task, id=task_id, project=project)
+
+    if request.method == "POST":
+        form = TaskForm(request.POST, instance=task)
+        if form.is_valid():
+            form.save()
+            return redirect(f"/projects/{project.id}/board/")
+    else:
+        form = TaskForm(instance=task)
+
+    return render(request, "task_form.html", {
+        "form": form,
+        "project": project,
+        "task": task,
+        "is_edit": True,
+    })

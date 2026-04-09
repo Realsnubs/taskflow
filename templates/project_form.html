@@ -1,18 +1,74 @@
 {% extends "base.html" %}
-{% block title %}New Project{% endblock %}
+{% block title %}Create project{% endblock %}
+
 {% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="page-card p-4 p-md-5 border">
+            <div class="mb-4">
+                <h1 class="h2 fw-bold mb-2">Create project</h1>
+                <p class="text-muted mb-0">Create a new project and start organizing your workflow.</p>
+            </div>
 
-<div class="card shadow-sm">
-  <div class="card-body">
-    <h1 class="h4 mb-3">Create project</h1>
+            <form method="post">
+                {% csrf_token %}
 
-    <form method="post">
-      {% csrf_token %}
-      {{ form.as_p }}
-      <button class="btn btn-primary" type="submit">Save</button>
-      <a class="btn btn-link" href="/projects/">Back</a>
-    </form>
-  </div>
+                <div class="mb-4">
+                    <label for="{{ form.name.id_for_label }}" class="form-label fw-semibold">Project name</label>
+                    {{ form.name }}
+                </div>
+
+                <div class="mb-4">
+                    <label for="{{ form.description.id_for_label }}" class="form-label fw-semibold">Description</label>
+                    {{ form.description }}
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary px-4">Save</button>
+                    <a href="/projects/" class="btn btn-outline-secondary">Back</a>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
+<style>
+    #id_name,
+    #id_description {
+        width: 100%;
+        border-radius: 12px;
+        border: 1px solid #ced4da;
+        padding: 12px 14px;
+        font-size: 16px;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.25s ease, color 0.25s ease;
+    }
+
+    #id_name:focus,
+    #id_description:focus {
+        outline: none;
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+    }
+
+    #id_description {
+        min-height: 180px;
+        resize: vertical;
+    }
+
+    body.dark-mode #id_name,
+    body.dark-mode #id_description {
+        background-color: #2a2a2a !important;
+        color: #ffffff !important;
+        border: 1px solid #555 !important;
+    }
+
+    body.dark-mode #id_name::placeholder,
+    body.dark-mode #id_description::placeholder {
+        color: #bbbbbb !important;
+    }
+
+    body.dark-mode .form-label {
+        color: #f1f1f1 !important;
+    }
+</style>
 {% endblock %}

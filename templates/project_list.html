@@ -2,32 +2,71 @@
 {% block title %}Projects{% endblock %}
 
 {% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+    <div>
+        <h1 class="display-6 fw-bold mb-1">Projects</h1>
+        <p class="text-muted mb-0">Manage your workspaces and open project boards.</p>
+    </div>
 
-<div class="d-flex align-items-center justify-content-between mb-3">
-  <h1 class="h3 m-0">Projects</h1>
-  <a class="btn btn-primary" href="/projects/new/">+ Add project</a>
+    <a href="/projects/new/" class="btn btn-primary px-4">+ New project</a>
 </div>
 
-<div class="row g-3">
-  {% for project in projects %}
-    <div class="col-12 col-md-6 col-lg-4">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title mb-2">{{ project.name }}</h5>
-          {% if project.description %}
-            <p class="card-text text-muted">{{ project.description }}</p>
-          {% endif %}
-          <a class="btn btn-outline-primary btn-sm" href="/projects/{{ project.id }}/board/">
-            Open board
-          </a>
-        </div>
-      </div>
-    </div>
-  {% empty %}
-    <div class="col-12">
-      <div class="alert alert-info">No projects yet</div>
-    </div>
-  {% endfor %}
-</div>
+{% if projects %}
+    <div class="row g-4">
+        {% for project in projects %}
+            <div class="col-md-6 col-xl-4">
+                <div class="project-card h-100 p-4 border">
+                    <div class="mb-3">
+                        <h2 class="h3 fw-bold mb-2">{{ project.name }}</h2>
+                        <p class="text-muted mb-0">
+                            {% if project.description %}
+                                {{ project.description }}
+                            {% else %}
+                                No description yet.
+                            {% endif %}
+                        </p>
+                    </div>
 
+                    <div class="d-flex gap-2 mt-4">
+                        <a href="/projects/{{ project.id }}/board/" class="btn btn-primary">
+                            Open board
+                        </a>
+                        <a href="/projects/{{ project.id }}/members/" class="btn btn-outline-secondary">
+                            Members
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="page-card p-5 border text-center">
+        <h2 class="h4 fw-bold mb-2">No projects yet</h2>
+        <p class="text-muted mb-4">Create your first project to start managing tasks.</p>
+        <a href="/projects/new/" class="btn btn-primary px-4">Create project</a>
+    </div>
+{% endif %}
+
+<style>
+    .project-card {
+        background: #ffffff;
+        border-radius: 18px;
+        box-shadow: 0 0.125rem 0.75rem rgba(0, 0, 0, 0.08);
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.25s ease, border-color 0.25s ease;
+    }
+
+    .project-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.12);
+    }
+
+    body.dark-mode .project-card {
+        background: #1e1e1e !important;
+        border-color: #333 !important;
+    }
+
+    body.dark-mode .project-card .text-muted {
+        color: #bdbdbd !important;
+    }
+</style>
 {% endblock %}

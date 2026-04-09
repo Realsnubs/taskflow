@@ -2,27 +2,134 @@
 {% block title %}Members{% endblock %}
 
 {% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="page-card p-4 p-md-5 border">
 
-<h1>Members — {{ project.name }}</h1>
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+                <div>
+                    <h1 class="display-6 fw-bold mb-2">Members — {{ project.name }}</h1>
+                    <p class="text-muted mb-0">Manage project participants and roles.</p>
+                </div>
 
-<p>
-  <a href="/projects/{{ project.id }}/board/">Back to board</a>
-</p>
+                <a href="/projects/{{ project.id }}/board/" class="btn btn-outline-secondary">
+                    Back to board
+                </a>
+            </div>
 
-<h2>Current members</h2>
-<ul>
-  {% for m in members %}
-    <li>{{ m.user.username }} — {{ m.role }}</li>
-  {% empty %}
-    <li>No members</li>
-  {% endfor %}
-</ul>
+            <div class="mb-5">
+                <h2 class="h3 fw-bold mb-3">Current members</h2>
 
-<h2>Add member</h2>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Add</button>
-</form>
+                {% if memberships %}
+                    <div class="d-flex flex-column gap-3">
+                        {% for membership in memberships %}
+    <div class="member-card d-flex justify-content-between align-items-center flex-wrap gap-3 p-3 border rounded-4">
+        <div>
+            <div class="fw-semibold fs-5">{{ membership.user.username }}</div>
+            <div class="text-muted small">Project participant</div>
+        </div>
 
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge role-badge
+                {% if membership.role == 'owner' %}bg-dark
+                {% elif membership.role == 'member' %}bg-primary
+                {% else %}bg-secondary
+                {% endif %}">
+                {{ membership.role|title }}
+            </span>
+
+            {% if membership.role != "owner" %}
+                <form method="post" action="/projects/{{ project.id }}/members/{{ membership.id }}/remove/" class="m-0">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger btn-sm">Remove</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+{% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-secondary mb-0">
+                        No members yet.
+                    </div>
+                {% endif %}
+            </div>
+
+            <div>
+                <h2 class="h3 fw-bold mb-3">Add member</h2>
+
+                <form method="post" class="member-form">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label for="{{ form.user.id_for_label }}" class="form-label fw-semibold">User</label>
+                        {{ form.user }}
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="{{ form.role.id_for_label }}" class="form-label fw-semibold">Role</label>
+                        {{ form.role }}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary px-4">Add member</button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    .member-card {
+        background: #ffffff;
+        transition: all 0.2s ease;
+    }
+
+    .member-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.08);
+    }
+
+    .role-badge {
+        font-size: 0.9rem;
+        padding: 8px 14px;
+        border-radius: 999px;
+    }
+
+    #id_user,
+    #id_role {
+        width: 100%;
+        border-radius: 12px;
+        border: 1px solid #ced4da;
+        padding: 12px 14px;
+        font-size: 16px;
+        background: #fff;
+        transition: all 0.2s ease;
+    }
+
+    #id_user:focus,
+    #id_role:focus {
+        outline: none;
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+    }
+
+    body.dark-mode .member-card {
+        background: #1e1e1e !important;
+        border-color: #333 !important;
+    }
+
+    body.dark-mode #id_user,
+    body.dark-mode #id_role {
+        background-color: #2a2a2a !important;
+        color: #ffffff !important;
+        border: 1px solid #555 !important;
+    }
+
+    body.dark-mode #id_user option,
+    body.dark-mode #id_role option {
+        background-color: #2a2a2a;
+        color: #ffffff;
+    }
+</style>
 {% endblock %}

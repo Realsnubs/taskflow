@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}TaskFlow — Landing{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container py-4">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <span class="badge rounded-pill px-3 py-2 mb-3"
+      style="background-color: #dbeafe; color: #1d4ed8; border: 1px solid #93c5fd;">
+    Project Management System
+</span>
+
+                <h1 class="display-4 fw-bold mb-3">
+                    Manage projects with clarity
+                </h1>
+
+                <p class="lead text-muted mb-4">
+                    TaskFlow helps teams organize projects, track tasks, manage deadlines,
+                    and collaborate in one clean workspace.
+                </p>
+
+                <div class="d-flex gap-3 flex-wrap">
+                    <a href="/projects/" class="btn btn-primary btn-lg">Open App</a>
+                    <a href="/accounts/login/" class="btn btn-outline-secondary btn-lg">Login</a>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="page-card p-4 border">
+                    <h3 class="h4 fw-bold mb-3">Why TaskFlow?</h3>
+
+                    <div class="d-flex flex-column gap-3">
+                        <div class="p-3 rounded-4 border">Create and manage projects</div>
+                        <div class="p-3 rounded-4 border">Track tasks by status and priority</div>
+                        <div class="p-3 rounded-4 border">Set deadlines and spot overdue tasks</div>
+                        <div class="p-3 rounded-4 border">Collaborate with comments and members</div>
+                        <div class="p-3 rounded-4 border">Use light and dark mode</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Features</h2>
+            <p class="text-muted">Built for simple and effective project management</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="page-card h-100 p-4 border">
+                    <h4 class="h5 fw-bold mb-3">Project Boards</h4>
+                    <p class="text-muted mb-0">
+                        Organize tasks into TODO, IN PROGRESS, and DONE columns.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="page-card h-100 p-4 border">
+                    <h4 class="h5 fw-bold mb-3">Team Collaboration</h4>
+                    <p class="text-muted mb-0">
+                        Add comments, manage members, and keep everyone aligned.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="page-card h-100 p-4 border">
+                    <h4 class="h5 fw-bold mb-3">Priority & Deadlines</h4>
+                    <p class="text-muted mb-0">
+                        Highlight important tasks and track overdue work visually.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="page-card p-5 text-center border">
+            <h2 class="fw-bold mb-3">Start using TaskFlow today</h2>
+            <p class="text-muted mb-4">
+                Simple, clean, and built for real project work.
+            </p>
+            <a href="/projects/" class="btn btn-dark btn-lg">Go to Projects</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

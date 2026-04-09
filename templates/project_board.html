@@ -1,178 +1,286 @@
 {% extends "base.html" %}
 {% block title %}Board{% endblock %}
+
 {% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 m-0">{{ project.name }} — Board</h1>
+</div>
 
-<h1>{{ project.name }} — Board</h1>
+<form method="get" class="row g-2 align-items-end mb-4">
+    <div class="col-auto">
+        <label class="form-label mb-1">Status</label>
+        <select name="status" class="form-select">
+            <option value="">All</option>
+            <option value="todo" {% if status_filter == "todo" %}selected{% endif %}>To do</option>
+            <option value="in_progress" {% if status_filter == "in_progress" %}selected{% endif %}>In progress</option>
+            <option value="done" {% if status_filter == "done" %}selected{% endif %}>Done</option>
+        </select>
+    </div>
 
-<form method="post"
-      action="/projects/{{ project.id }}/delete/"
-      onsubmit="return confirm('Are you sure you want to delete this project?');"
-      class="mb-3">
-  {% csrf_token %}
-  <button type="submit" class="btn btn-danger btn-sm">
-    Delete project
-  </button>
+    <div class="col-auto">
+        <label class="form-label mb-1">Priority</label>
+        <select name="priority" class="form-select">
+            <option value="">All</option>
+            <option value="low" {% if priority_filter == "low" %}selected{% endif %}>Low</option>
+            <option value="medium" {% if priority_filter == "medium" %}selected{% endif %}>Medium</option>
+            <option value="high" {% if priority_filter == "high" %}selected{% endif %}>High</option>
+        </select>
+    </div>
+
+    <div class="col-auto">
+        <button type="submit" class="btn btn-dark">Filter</button>
+    </div>
+
+    <div class="col-auto">
+        <a href="/projects/{{ project.id }}/board/" class="btn btn-outline-secondary">Reset</a>
+    </div>
 </form>
 
-<p>
-  <a href="/projects/{{ project.id }}/tasks/new/">+ Add task</a> |
-  <a href="/projects/{{ project.id }}/members/">Members</a>
-</p>
+<div class="d-flex gap-2 mb-4">
+    <a href="/projects/{{ project.id }}/tasks/new/" class="btn btn-primary">+ Add task</a>
+    <a href="/projects/{{ project.id }}/members/" class="btn btn-outline-secondary">Members</a>
 
-<table border="1" cellpadding="15" width="100%">
-  <tr>
-    <th>TODO</th>
-    <th>IN PROGRESS</th>
-    <th>DONE</th>
-  </tr>
+    <form method="post"
+          action="/projects/{{ project.id }}/delete/"
+          onsubmit="return confirm('Are you sure you want to delete this project?');"
+          class="ms-auto">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline-danger">Delete project</button>
+    </form>
+</div>
 
-  <tr>
-    <!-- TODO -->
-    <td valign="top" width="33%">
-      {% for t in todo %}
-        <div style="margin-bottom:15px; padding:10px; border:1px solid #ccc;">
-          <b>{{ t.title }}</b>
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="board-column p-3">
+            <h2 class="h5 mb-3">TODO</h2>
 
-          <!-- Status / Delete buttons -->
-          <div style="margin-top:8px;">
-            <form method="post" action="/projects/{{ project.id }}/tasks/{{ t.id }}/set/todo/" style="display:inline;">
-              {% csrf_token %}<button type="submit">Todo</button>
-            </form>
+            {% for t in todo %}
+                <div class="task-card mb-3 p-3 border rounded">
+                    <div class="fw-bold mb-2">{{ t.title }}</div>
 
-            <form method="post" action="/projects/{{ project.id }}/tasks/{{ t.id }}/set/in_progress/" style="display:inline;">
-              {% csrf_token %}<button type="submit">In progress</button>
-            </form>
+                    <div class="mb-2 d-flex gap-2 flex-wrap">
+                        <span class="badge
+                            {% if t.priority == 'low' %}bg-secondary
+                            {% elif t.priority == 'medium' %}bg-warning text-dark
+                            {% elif t.priority == 'high' %}bg-danger
+                            {% endif %}
+                        ">
+                            {{ t.priority }}
+                        </span>
 
-            <form method="post" action="/projects/{{ project.id }}/tasks/{{ t.id }}/set/done/" style="display:inline;">
-              {% csrf_token %}<button type="submit">Done</button>
-            </form>
+                        {% if t.deadline %}
+                            <span class="badge bg-light text-dark border">
+                                {{ t.deadline }}
+                            </span>
+                        {% endif %}
+                    </div>
 
-            <form method="post" action="/projects/{{ project.id }}/tasks/{{ t.id }}/delete/" style="display:inline;">
-              {% csrf_token %}<button type="submit" style="color:red;">Delete</button>
-            </form>
-          </div>
+                    {% if t.deadline and t.deadline < today and t.status != "done" %}
+                        <div class="small text-danger fw-bold mb-2">⚠ Overdue</div>
+                    {% endif %}
 
-          <!-- Comments -->
-          <div style="margin-top:10px; padding-top:10px; border-top:1px solid #ddd;">
-            {% for c in t.comments.all %}
-              <div style="margin-bottom:6px;">
-                <b>{{ c.author.username }}</b>: {{ c.text }}
-              </div>
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <form method="post" action="/projects/{{ project.id }}/tasks/{{ t.id }}/set/todo/">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-secondary">Todo</button>
+                        </form>
+
+                        <form method="post" action="/projects/{{ project.id }}/tasks/{{ t.id }}/set/in_progress/">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-primary">In progress</button>
+                        </form>
+
+                        <form method="post" action="/projects/{{ project.id }}/tasks/{{ t.id }}/set/done/">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-success">Done</button>
+                        </form>
+
+                        <a href="/projects/{{ project.id }}/tasks/{{ t.id }}/edit/" class="btn btn-sm btn-outline-warning">Edit</a>
+
+                        <form method="post" action="/projects/{{ project.id }}/tasks/{{ t.id }}/delete/">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                        </form>
+                    </div>
+
+                    <div class="border-top pt-3">
+                        <div class="small text-muted mb-2">Comments</div>
+
+                        {% for comment in t.comments.all %}
+                            <div class="small mb-1">
+                                <strong>{{ comment.user }}</strong>: {{ comment.text }}
+                            </div>
+                        {% empty %}
+                            <div class="small text-muted mb-2">No comments</div>
+                        {% endfor %}
+
+                        <form method="post" action="/projects/{{ project.id }}/tasks/{{ t.id }}/comment/" class="mt-2">
+                            {% csrf_token %}
+                            <div class="input-group input-group-sm">
+                                <input type="text" name="text" class="form-control" placeholder="Add comment...">
+                                <button type="submit" class="btn btn-dark">Send</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             {% empty %}
-              <div style="color:gray;">No comments</div>
+                <div class="text-muted">No tasks</div>
             {% endfor %}
-
-            <form method="post" action="/projects/{{ project.id }}/tasks/{{ t.id }}/comment/" style="margin-top:8px;">
-              {% csrf_token %}
-              <input type="text" name="text" placeholder="Add comment..." required style="width:70%;">
-              <button type="submit">Send</button>
-            </form>
-          </div>
-
         </div>
-      {% empty %}
-        <p>No tasks</p>
-      {% endfor %}
-    </td>
+    </div>
 
-    <!-- IN PROGRESS -->
-    <td valign="top" width="33%">
-      {% for t in in_progress %}
-        <div style="margin-bottom:15px; padding:10px; border:1px solid #ccc;">
-          <b>{{ t.title }}</b>
+    <div class="col-lg-4">
+        <div class="board-column p-3">
+            <h2 class="h5 mb-3">IN PROGRESS</h2>
 
-          <!-- Status / Delete buttons -->
-          <div style="margin-top:8px;">
-            <form method="post" action="/projects/{{ project.id }}/tasks/{{ t.id }}/set/todo/" style="display:inline;">
-              {% csrf_token %}<button type="submit">Todo</button>
-            </form>
+            {% for t in in_progress %}
+                <div class="task-card mb-3 p-3 border rounded">
+                    <div class="fw-bold mb-2">{{ t.title }}</div>
 
-            <form method="post" action="/projects/{{ project.id }}/tasks/{{ t.id }}/set/in_progress/" style="display:inline;">
-              {% csrf_token %}<button type="submit">In progress</button>
-            </form>
+                    <div class="mb-2 d-flex gap-2 flex-wrap">
+                        <span class="badge
+                            {% if t.priority == 'low' %}bg-secondary
+                            {% elif t.priority == 'medium' %}bg-warning text-dark
+                            {% elif t.priority == 'high' %}bg-danger
+                            {% endif %}
+                        ">
+                            {{ t.priority }}
+                        </span>
 
-            <form method="post" action="/projects/{{ project.id }}/tasks/{{ t.id }}/set/done/" style="display:inline;">
-              {% csrf_token %}<button type="submit">Done</button>
-            </form>
+                        {% if t.deadline %}
+                            <span class="badge bg-light text-dark border">
+                                {{ t.deadline }}
+                            </span>
+                        {% endif %}
+                    </div>
 
-            <form method="post" action="/projects/{{ project.id }}/tasks/{{ t.id }}/delete/" style="display:inline;">
-              {% csrf_token %}<button type="submit" style="color:red;">Delete</button>
-            </form>
-          </div>
+                    {% if t.deadline and t.deadline < today and t.status != "done" %}
+                        <div class="small text-danger fw-bold mb-2">⚠ Overdue</div>
+                    {% endif %}
 
-          <!-- Comments -->
-          <div style="margin-top:10px; padding-top:10px; border-top:1px solid #ddd;">
-            {% for c in t.comments.all %}
-              <div style="margin-bottom:6px;">
-                <b>{{ c.author.username }}</b>: {{ c.text }}
-              </div>
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <form method="post" action="/projects/{{ project.id }}/tasks/{{ t.id }}/set/todo/">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-secondary">Todo</button>
+                        </form>
+
+                        <form method="post" action="/projects/{{ project.id }}/tasks/{{ t.id }}/set/in_progress/">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-primary">In progress</button>
+                        </form>
+
+                        <form method="post" action="/projects/{{ project.id }}/tasks/{{ t.id }}/set/done/">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-success">Done</button>
+                        </form>
+
+                        <a href="/projects/{{ project.id }}/tasks/{{ t.id }}/edit/" class="btn btn-sm btn-outline-warning">Edit</a>
+
+                        <form method="post" action="/projects/{{ project.id }}/tasks/{{ t.id }}/delete/">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                        </form>
+                    </div>
+
+                    <div class="border-top pt-3">
+                        <div class="small text-muted mb-2">Comments</div>
+
+                        {% for comment in t.comments.all %}
+                            <div class="small mb-1">
+                                <strong>{{ comment.user }}</strong>: {{ comment.text }}
+                            </div>
+                        {% empty %}
+                            <div class="small text-muted mb-2">No comments</div>
+                        {% endfor %}
+
+                        <form method="post" action="/projects/{{ project.id }}/tasks/{{ t.id }}/comment/" class="mt-2">
+                            {% csrf_token %}
+                            <div class="input-group input-group-sm">
+                                <input type="text" name="text" class="form-control" placeholder="Add comment...">
+                                <button type="submit" class="btn btn-dark">Send</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             {% empty %}
-              <div style="color:gray;">No comments</div>
+                <div class="text-muted">No tasks</div>
             {% endfor %}
-
-            <form method="post" action="/projects/{{ project.id }}/tasks/{{ t.id }}/comment/" style="margin-top:8px;">
-              {% csrf_token %}
-
-              <input type="text" name="text" placeholder="Add comment..." required style="width:70%;">
-              <button type="submit">Send</button>
-            </form>
-          </div>
-
         </div>
-      {% empty %}
-        <p>No tasks</p>
-      {% endfor %}
-    </td>
+    </div>
 
-    <!-- DONE -->
-    <td valign="top" width="33%">
-      {% for t in done %}
-        <div style="margin-bottom:15px; padding:10px; border:1px solid #ccc;">
-          <b>{{ t.title }}</b>
+    <div class="col-lg-4">
+        <div class="board-column p-3">
+            <h2 class="h5 mb-3">DONE</h2>
 
-          <!-- Status / Delete buttons -->
-          <div style="margin-top:8px;">
-            <form method="post" action="/projects/{{ project.id }}/tasks/{{ t.id }}/set/todo/" style="display:inline;">
-              {% csrf_token %}<button type="submit">Todo</button>
-            </form>
+            {% for t in done %}
+                <div class="task-card mb-3 p-3 border rounded">
+                    <div class="fw-bold mb-2">{{ t.title }}</div>
 
-            <form method="post" action="/projects/{{ project.id }}/tasks/{{ t.id }}/set/in_progress/" style="display:inline;">
-              {% csrf_token %}<button type="submit">In progress</button>
-            </form>
+                    <div class="mb-2 d-flex gap-2 flex-wrap">
+                        <span class="badge
+                            {% if t.priority == 'low' %}bg-secondary
+                            {% elif t.priority == 'medium' %}bg-warning text-dark
+                            {% elif t.priority == 'high' %}bg-danger
+                            {% endif %}
+                        ">
+                            {{ t.priority }}
+                        </span>
 
-            <form method="post" action="/projects/{{ project.id }}/tasks/{{ t.id }}/set/done/" style="display:inline;">
-              {% csrf_token %}<button type="submit">Done</button>
-            </form>
+                        {% if t.deadline %}
+                            <span class="badge bg-light text-dark border">
+                                {{ t.deadline }}
+                            </span>
+                        {% endif %}
+                    </div>
 
-            <form method="post" action="/projects/{{ project.id }}/tasks/{{ t.id }}/delete/" style="display:inline;">
-              {% csrf_token %}<button type="submit" style="color:red;">Delete</button>
-            </form>
-          </div>
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <form method="post" action="/projects/{{ project.id }}/tasks/{{ t.id }}/set/todo/">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-secondary">Todo</button>
+                        </form>
 
-          <!-- Comments -->
-          <div style="margin-top:10px; padding-top:10px; border-top:1px solid #ddd;">
-            {% for c in t.comments.all %}
-              <div style="margin-bottom:6px;">
-                <b>{{ c.author.username }}</b>: {{ c.text }}
-              </div>
+                        <form method="post" action="/projects/{{ project.id }}/tasks/{{ t.id }}/set/in_progress/">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-primary">In progress</button>
+                        </form>
+
+                        <form method="post" action="/projects/{{ project.id }}/tasks/{{ t.id }}/set/done/">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-success">Done</button>
+                        </form>
+
+                        <a href="/projects/{{ project.id }}/tasks/{{ t.id }}/edit/" class="btn btn-sm btn-outline-warning">Edit</a>
+
+                        <form method="post" action="/projects/{{ project.id }}/tasks/{{ t.id }}/delete/">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                        </form>
+                    </div>
+
+                    <div class="border-top pt-3">
+                        <div class="small text-muted mb-2">Comments</div>
+
+                        {% for comment in t.comments.all %}
+                            <div class="small mb-1">
+                                <strong>{{ comment.user }}</strong>: {{ comment.text }}
+                            </div>
+                        {% empty %}
+                            <div class="small text-muted mb-2">No comments</div>
+                        {% endfor %}
+
+                        <form method="post" action="/projects/{{ project.id }}/tasks/{{ t.id }}/comment/" class="mt-2">
+                            {% csrf_token %}
+                            <div class="input-group input-group-sm">
+                                <input type="text" name="text" class="form-control" placeholder="Add comment...">
+                                <button type="submit" class="btn btn-dark">Send</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             {% empty %}
-              <div style="color:gray;">No comments</div>
+                <div class="text-muted">No tasks</div>
             {% endfor %}
-
-            <form method="post" action="/projects/{{ project.id }}/tasks/{{ t.id }}/comment/" style="margin-top:8px;">
-              {% csrf_token %}
-              <input type="text" name="text" placeholder="Add comment..." required style="width:70%;">
-              <button type="submit">Send</button>
-            </form>
-          </div>
-
         </div>
-      {% empty %}
-        <p>No tasks</p>
-      {% endfor %}
-    </td>
-
-  </tr>
-</table>
-
+    </div>
+</div>
 {% endblock %}

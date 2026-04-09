@@ -18,6 +18,8 @@ urlpatterns = [
     path("projects/<int:project_id>/tasks/<int:task_id>/comment/", views.add_comment),
     path("projects/<int:project_id>/members/", views.project_members),
     path("projects/<int:project_id>/delete/", views.project_delete),
+    path("projects/<int:project_id>/members/<int:membership_id>/remove/", views.remove_member, name="remove_member"),
+    path("projects/<int:project_id>/tasks/<int:task_id>/edit/", views.task_edit, name="task_edit"),
 ]
 
 urlpatterns += router.urls
